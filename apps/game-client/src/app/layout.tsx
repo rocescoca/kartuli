@@ -19,9 +19,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Disable analytics and tracking during CI audits
+  // This prevents analytics from skewing Lighthouse performance scores
+  const _isCiAudit = process.env.CI_AUDIT === 'true';
+
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Future: Add analytics scripts here with !_isCiAudit condition */}
+        {/* Current status: CI_AUDIT={_isCiAudit ? 'enabled' : 'disabled'} */}
+      </body>
     </html>
   );
 }

@@ -1,0 +1,32 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 1,
+      "settings": {
+        "formFactor": "mobile",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "cpuSlowdownMultiplier": 4
+        },
+        "screenEmulation": {
+          "mobile": true,
+          "width": 375,
+          "height": 667,
+          "deviceScaleFactor": 2
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["${LIGHTHOUSE_ASSERT_LEVEL}", { "minScore": 0.9 }],
+        "categories:accessibility": ["${LIGHTHOUSE_ASSERT_LEVEL}", { "minScore": 0.9 }],
+        "categories:best-practices": ["${LIGHTHOUSE_ASSERT_LEVEL}", { "minScore": 0.9 }],
+        "categories:seo": ["${LIGHTHOUSE_ASSERT_LEVEL}", { "minScore": 0.9 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

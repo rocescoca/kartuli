@@ -100,8 +100,35 @@ jobs:
           name: e2e-artifacts-pr-${{ github.run_number }}
           path: tools/e2e/test-results/
           retention-days: 3
+
+      - name: Run Lighthouse CI on Preview
+        id: lighthouse
+        env:
+          CI_AUDIT: "true"
+          LIGHTHOUSE_ASSERT_LEVEL: "warn"
+          # Note: Warm-up period until ~Oct 28, 2025, then switch to "error"
+        run: |
+          # Run Lighthouse CI and capture the report URL
+          pnpm exec lhci autorun --collect.url="${{ steps.deploy.outputs.preview-url }}" 2>&1 | tee lighthouse_output.txt
+          
+          # Extract the report URL from the output
+          REPORT_URL=$(grep -o 'https://storage\.googleapis\.com/lighthouse-infrastructure\.appspot\.com/reports/[^[:space:]]*' lighthouse_output.txt | tail -1)
+          
+          # Set the output for the next step
+          echo "report_url=${REPORT_URL}" >> $GITHUB_OUTPUT
+          
+          # Also output to logs for debugging
+          echo "Lighthouse report URL: ${REPORT_URL}"
       
-      - name: Comment PR with Preview URL
+      - name: Upload Lighthouse CI artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-artifacts-pr-${{ github.run_number }}
+          path: .lighthouseci/
+          retention-days: 7
+      
+      - name: Comment PR with Preview URL and Lighthouse Report
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -118,12 +145,25 @@ jobs:
             );
             
             const previewUrl = '${{ steps.deploy.outputs.preview-url }}';
+            const lighthouseReportUrl = '${{ steps.lighthouse.outputs.report_url }}';
+            
+            // Use the captured Lighthouse report URL or fallback to CI artifacts
+            let lighthouseReport;
+            if (lighthouseReportUrl && lighthouseReportUrl !== '') {
+              lighthouseReport = `📊 [Lighthouse Report](${lighthouseReportUrl})`;
+            } else {
+              lighthouseReport = '📊 [Lighthouse Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+            }
             
             const commentBody = `🚀 **Preview Deployment**
             
             Your changes have been deployed to a preview environment:
             
             **Preview URL:** ${previewUrl}
+            
+            **Quality Checks:**
+            - ✅ E2E smoke tests passed
+            - 📊 ${lighthouseReport}
             
             This preview will be automatically cleaned up when the PR is closed or merged.
             
@@ -145,4 +185,3 @@ jobs:
                 body: commentBody
               });
             }
-

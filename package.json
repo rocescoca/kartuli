@@ -12,6 +12,7 @@
     "test": "turbo run test --filter='!@kartuli/e2e'",
     "test:e2e": "pnpm --filter @kartuli/e2e test",
     "test:e2e:ui": "pnpm --filter @kartuli/e2e test:ui",
+    "lighthouse": "lhci autorun",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --write",
     "typecheck": "turbo run typecheck",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.0.0",
+    "@lhci/cli": "^0.12.0",
     "lefthook": "^1.6.0",
     "turbo": "^2.0.0",
     "vitepress": "catalog:"
